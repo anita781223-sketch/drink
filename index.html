@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#EFE9E3">
+<title>飲料娃娃機</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EFE9E3; --body:#C9ADA7; --bodyDark:#A98A84; --bodyDeep:#8C6F6A;
+  --text:#55494A; --soft:#9C8D8A; --sage:#9CAF97; --sageDeep:#7C927A;
+  --coffee:#A98467; --cream:#FDFBF8; --line:#E2D6CE;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Baloo 2',sans-serif;font-size:15px}
+button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
+input{font-family:inherit}
+input::placeholder{color:#BFB2AE}
+.wrap{max-width:430px;margin:0 auto;padding:18px 16px calc(92px + env(safe-area-inset-bottom))}
+header{text-align:center;margin-bottom:14px}
+header h1{margin:0;font-size:21px;font-weight:700;letter-spacing:1px}
+header p{margin:4px 0 0;font-size:12.5px;color:var(--soft)}
+.monthnav{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:12px}
+.monthnav button{background:var(--cream);border-radius:10px;width:32px;height:32px;font-size:16px;color:var(--bodyDeep);box-shadow:0 1px 3px rgba(85,73,74,.12)}
+.monthnav span{font-weight:700;font-size:15.5px}
+.machine-shell{background:var(--body);border-radius:26px;padding:0 10px 10px;box-shadow:0 10px 24px rgba(140,111,106,.25)}
+.marquee{display:flex;justify-content:center;align-items:center;gap:7px;padding:13px 0 9px}
+.marquee i{width:9px;height:9px;border-radius:9px;box-shadow:inset 0 -1px 2px rgba(0,0,0,.12)}
+.marquee b{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;letter-spacing:3px;color:var(--cream);margin:0 6px}
+.glass{position:relative;height:300px;overflow:hidden;border-radius:18px;background:linear-gradient(180deg,#FBF7F2,#F0E6DF);border:3px solid var(--bodyDark);box-shadow:inset 0 8px 18px rgba(140,111,106,.14)}
+.claw{position:absolute;top:0;left:50%;transform:translateX(-50%);transform-origin:top center;z-index:2;pointer-events:none}
+.claw .rope{width:2.5px;height:34px;background:var(--bodyDark);margin:0 auto}
+.shine{position:absolute;top:0;left:8%;width:16%;height:100%;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0));transform:skewX(-8deg);pointer-events:none;z-index:3}
+.glass .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--soft);font-size:13.5px;gap:6px;z-index:1;text-align:center}
+.glass .empty em{font-style:normal;font-size:30px}
+.mitem{position:absolute;top:0;left:0;width:66px;height:66px;will-change:transform;display:flex;align-items:center;justify-content:center}
+.mitem img{max-width:66px;max-height:66px;filter:drop-shadow(0 3px 4px rgba(85,73,74,.25));pointer-events:none}
+.mitem .ph{width:46px;height:58px;border-radius:10px 10px 14px 14px;border:2px solid var(--soft);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;box-shadow:0 3px 4px rgba(85,73,74,.2);background:linear-gradient(180deg,#EEE,#FFF)}
+.rowflex{display:flex;gap:10px;margin-top:12px}
+.shake{flex:1;border-radius:16px;padding:13px 0;font-size:15.5px;font-weight:700;color:#FFF;background:linear-gradient(180deg,var(--body),var(--bodyDark));box-shadow:0 4px 10px rgba(140,111,106,.3);letter-spacing:2px}
+.sumcard{flex:1.3;background:var(--cream);border-radius:16px;padding:9px 14px;box-shadow:0 1px 4px rgba(85,73,74,.08)}
+.sumcard .s1{font-size:11.5px;color:var(--soft)}
+.sumcard .s2{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:19px;color:var(--bodyDeep)}
+.listhead{font-size:12.5px;color:var(--soft);font-weight:600;margin:16px 0 8px}
+.rowitem{display:flex;align-items:center;gap:11px;background:var(--cream);border-radius:15px;padding:9px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(85,73,74,.07)}
+.rowitem .thumb40{width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:21px}
+.rowitem .thumb40 img{max-width:40px;max-height:40px}
+.rowitem .mid{flex:1;min-width:0}
+.rowitem .t1{font-weight:700;font-size:14px}
+.rowitem .t1 span{font-weight:400;color:var(--soft)}
+.rowitem .t2{font-size:11.5px;color:var(--soft)}
+.rowitem .price{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:14.5px}
+.rowitem button{font-size:16px;padding:4px}
+.tag{border-radius:6px;padding:1px 6px;margin-left:5px;font-size:10.5px;font-weight:600}
+.nopic{color:#C79188;margin-left:5px;font-weight:600}
+.card{background:var(--cream);border-radius:22px;padding:18px;box-shadow:0 4px 14px rgba(85,73,74,.08)}
+.catrow{display:flex;gap:8px;margin-bottom:14px}
+.catrow button{flex:1;padding:10px 0;border-radius:13px;font-size:14.5px;font-weight:700;border:1.5px solid var(--line);background:#FFF;color:var(--soft)}
+.catrow button.on-tea{border:2px solid var(--sageDeep);background:#E8EEE4;color:var(--sageDeep)}
+.catrow button.on-cof{border:2px solid var(--coffee);background:#F0E4D8;color:var(--coffee)}
+label.f{font-size:12.5px;color:var(--soft);margin-bottom:5px;display:block;font-weight:600}
+.inp{width:100%;padding:11px 13px;border-radius:13px;border:1.5px solid var(--line);background:var(--cream);color:var(--text);font-size:15px;outline:none;margin-bottom:12px}
+.inp.miss{border-color:#D48A80}
+.two{display:flex;gap:10px}
+.two>div{flex:1}
+.savebtn{width:100%;border-radius:16px;padding:14px 0;font-size:16px;font-weight:700;letter-spacing:3px;color:#FFF;background:linear-gradient(180deg,var(--sage),var(--sageDeep));box-shadow:0 4px 10px rgba(124,146,122,.3)}
+.savebtn:disabled{background:var(--line);box-shadow:none}
+/* 編輯器 */
+.uplabel{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--body);border-radius:15px;padding:22px 0;background:#FBF7F3;cursor:pointer;font-size:13px;color:var(--soft)}
+.checker{display:flex;align-items:center;justify-content:center;border:1.5px solid var(--line);border-radius:15px;padding:8px;margin-bottom:8px;background:repeating-conic-gradient(#F2ECE6 0% 25%,#FFF 0% 50%) 0 0/16px 16px}
+.checker canvas{max-width:100%;max-height:190px;display:block}
+.panel{background:#FBF7F3;border-radius:13px;padding:10px 13px}
+.chips{display:flex;gap:7px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.chip{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:7px 0;font-size:12.5px;font-weight:600;background:#FFF;color:var(--soft);text-align:center;min-width:60px}
+.chip.on{border-color:var(--sageDeep);background:#E8EEE4;color:var(--sageDeep)}
+.chip.on-p{border-color:var(--bodyDeep);background:#F1E6E0;color:var(--bodyDeep)}
+.bs{width:32px;height:32px;border-radius:9px;border:1.5px solid var(--line);background:#FFF;font-size:11.5px;font-weight:600;color:var(--soft);flex:none}
+.bs.on{border-color:var(--bodyDeep);background:#F1E6E0;color:var(--bodyDeep)}
+.hint1{font-size:11.5px;color:var(--soft);margin-bottom:5px}
+.hint2{display:flex;justify-content:space-between;font-size:11.5px;color:var(--soft);margin-bottom:3px}
+.toolhint{font-size:11px;color:var(--sageDeep);margin-top:6px}
+.slider{width:100%;accent-color:var(--sageDeep);margin-bottom:10px}
+.thumbbox{width:52px;height:52px;flex-shrink:0;border-radius:10px;border:1.5px solid var(--line);background:repeating-conic-gradient(#F2ECE6 0% 25%,#FFF 0% 50%) 0 0/10px 10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumbbox img{max-width:46px;max-height:46px}
+/* 統計 */
+.statcards{display:flex;gap:10px;margin-bottom:14px}
+.statcards>div{flex:1;background:var(--cream);border-radius:18px;padding:13px 15px;box-shadow:0 1px 4px rgba(85,73,74,.08)}
+.statcards .k{font-size:12px;color:var(--soft)}
+.statcards .v{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:21px;color:var(--bodyDeep)}
+.statcards .v.g{color:var(--sageDeep)}
+.scopehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.scopehead b{font-size:14px}
+.scopes{display:flex;gap:5px}
+.scopes button{border-radius:9px;padding:5px 11px;font-size:12px;font-weight:600;background:var(--cream);color:var(--soft)}
+.scopes button.on{background:var(--bodyDeep);color:#FFF}
+.donutcard{background:var(--cream);border-radius:18px;padding:13px 15px 11px;margin-bottom:12px;box-shadow:0 1px 4px rgba(85,73,74,.08)}
+.donutcard h4{margin:0 0 2px;font-size:13.5px}
+.donutwrap{position:relative;display:flex;justify-content:center}
+.donutcenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.donutcenter b{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:var(--bodyDeep);line-height:1}
+.donutcenter span{font-size:10.5px;color:var(--soft)}
+.legend{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:4px;font-size:11.5px}
+.legend i{width:9px;height:9px;border-radius:9px;flex-shrink:0}
+.legend em{font-style:normal;color:var(--soft)}
+.rankitem{background:var(--cream);border-radius:15px;padding:11px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(85,73,74,.07)}
+.rankitem .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.rankitem .nm{font-weight:700;font-size:14.5px}
+.rankitem .nm b{font-family:'Baloo 2',sans-serif;margin-right:8px;font-weight:700}
+.rankitem .ct{font-size:12.5px;color:var(--soft)}
+.rankbar{height:8px;border-radius:8px;background:#F0E8E2;overflow:hidden}
+.rankbar i{display:block;height:100%;border-radius:8px;transition:width .5s ease}
+.emptymsg{text-align:center;color:var(--soft);font-size:13.5px;padding:26px 0}
+/* 備份 */
+.backup{background:var(--cream);border-radius:18px;padding:14px 15px;margin-top:16px;box-shadow:0 1px 4px rgba(85,73,74,.08)}
+.backup h4{margin:0 0 4px;font-size:13.5px}
+.backup p{margin:0 0 10px;font-size:11.5px;color:var(--soft);line-height:1.5}
+.backup .btns{display:flex;gap:8px}
+.backup .btns button,.backup .btns label{flex:1;border-radius:12px;padding:10px 0;font-size:13px;font-weight:700;text-align:center;cursor:pointer}
+.bk-exp{background:var(--bodyDeep);color:#FFF}
+.bk-imp{background:#FFF;border:1.5px solid var(--line);color:var(--soft)}
+.storemode{font-size:10.5px;color:var(--soft);margin-top:8px}
+/* nav / modal / toast */
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(253,251,248,.96);border-top:1px solid var(--line);display:flex;justify-content:center;gap:6px;padding:8px 0 calc(14px + env(safe-area-inset-bottom));z-index:40;backdrop-filter:blur(8px)}
+nav button{border-radius:14px;padding:7px 20px;display:flex;flex-direction:column;align-items:center;gap:1px}
+nav button.on{background:#F1E6E0}
+nav button .ic{font-size:17px}
+nav button .tx{font-size:11px;font-weight:500;color:var(--soft)}
+nav button.on .tx{font-weight:700;color:var(--bodyDeep)}
+#modal{position:fixed;inset:0;background:rgba(85,73,74,.4);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+#modal .sheet{width:100%;max-width:430px;max-height:88vh;overflow-y:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+#modal .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#modal .mhead b{font-size:15.5px}
+#modal .mhead button{background:var(--cream);border-radius:10px;width:30px;height:30px;font-size:14px;color:var(--soft)}
+#toast{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--text);color:#FFF;border-radius:13px;padding:9px 18px;font-size:13.5px;z-index:70;box-shadow:0 4px 14px rgba(0,0,0,.2);white-space:nowrap}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>我的飲料娃娃機</h1>
+    <p>每喝一杯,收藏一隻小杯杯 ✦</p>
+  </header>
+
+  <section id="tab-machine">
+    <div class="monthnav">
+      <button id="mprev">‹</button><span id="mlabel"></span><button id="mnext">›</button>
+    </div>
+    <div class="machine-shell">
+      <div class="marquee">
+        <i style="background:#F2D8CE"></i><i style="background:#E8EEE4"></i><i style="background:#F6EAD8"></i><i style="background:#E4DCE8"></i>
+        <b>DRINK CATCHER</b>
+        <i style="background:#E4DCE8"></i><i style="background:#F6EAD8"></i><i style="background:#E8EEE4"></i><i style="background:#F2D8CE"></i>
+      </div>
+      <div class="glass" id="glass">
+        <div class="claw" id="claw">
+          <div class="rope"></div>
+          <svg width="42" height="26" viewBox="0 0 42 26"><circle cx="21" cy="6" r="6" fill="#8C6F6A"/><path d="M21 8 C 10 10, 5 18, 7 25" stroke="#8C6F6A" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M21 8 C 32 10, 37 18, 35 25" stroke="#8C6F6A" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <div class="shine"></div>
+        <div class="empty" id="glassEmpty"><em>🧋</em>這個月的娃娃機還空空的</div>
+      </div>
+    </div>
+    <div class="rowflex">
+      <button class="shake" id="shakeBtn">搖一搖 🎪</button>
+      <div class="sumcard"><div class="s1" id="sumCount">本月 0 杯</div><div class="s2" id="sumTotal">NT$ 0</div></div>
+    </div>
+    <div id="monthList"></div>
+  </section>
+
+  <section id="tab-add" hidden>
+    <div class="card">
+      <div class="catrow">
+        <button id="catTea" class="on-tea">🧋 手搖</button>
+        <button id="catCof">☕ 咖啡</button>
+      </div>
+      <label class="f">品牌 *</label>
+      <input class="inp" id="fBrand" placeholder="例:五桐號、Cama">
+      <label class="f">品項</label>
+      <input class="inp" id="fName" placeholder="例:黃金蕎麥鮮奶茶">
+      <div class="two">
+        <div><label class="f">價格 (NT$) *</label><input class="inp" id="fPrice" type="number" inputmode="numeric" placeholder="65"></div>
+        <div><label class="f">日期</label><input class="inp" id="fDate" type="date"></div>
+      </div>
+      <label class="f">飲料照片 (會自動幫你去背 ✂️,已去背的圖也可以直接傳)</label>
+      <div id="addEditor" style="margin-bottom:16px"></div>
+      <button class="savebtn" id="addBtn">收進娃娃機</button>
+    </div>
+  </section>
+
+  <section id="tab-stats" hidden>
+    <div class="statcards">
+      <div><div class="k" id="stMk"></div><div class="v" id="stMv"></div></div>
+      <div><div class="k" id="stYk"></div><div class="v g" id="stYv"></div></div>
+    </div>
+    <div class="scopehead">
+      <b id="scopeTitle"></b>
+      <div class="scopes">
+        <button data-sc="month" class="on">本月</button>
+        <button data-sc="year">今年</button>
+        <button data-sc="all">全部</button>
+      </div>
+    </div>
+    <div id="donuts"></div>
+    <div id="ranking"></div>
+    <div id="spendHistory"></div>
+    <div class="backup">
+      <h4>🔐 資料備份</h4>
+      <p>把所有紀錄和圖片打包成備份檔。換手機、換版本、或不小心清掉資料時,匯入就全部回來。建議每個月匯出一次!</p>
+      <div class="btns">
+        <button class="bk-exp" id="expBtn">匯出備份</button>
+        <label class="bk-imp">匯入備份<input type="file" id="impInput" accept=".json,application/json" hidden></label>
+      </div>
+      <div class="storemode" id="storeMode"></div>
+    </div>
+  </section>
+</div>
+
+<nav>
+  <button data-tab="machine" class="on"><span class="ic">🎪</span><span class="tx">娃娃機</span></button>
+  <button data-tab="add"><span class="ic">＋</span><span class="tx">記一杯</span></button>
+  <button data-tab="stats"><span class="ic">📊</span><span class="tx">統計</span></button>
+</nav>
+
+<div id="modal" hidden>
+  <div class="sheet">
+    <div class="mhead"><b id="modalTitle">📷</b><button id="modalClose">✕</button></div>
+    <div id="modalEditor"></div>
+    <button class="savebtn" id="modalSave" style="margin-top:14px" disabled>存這張照片</button>
+  </div>
+</div>
+
+<div id="toast" hidden></div>
+<script>
+/* ═══════════ 聰明儲存:Claude 帳號儲存 → 瀏覽器長期儲存 → 記憶體 ═══════════ */
+const mem = {};
+const hasWS = (() => { try { return !!(window.storage && window.storage.get); } catch(e){ return false; } })();
+const hasLS = (() => { try { localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; } catch(e){ return false; } })();
+const store = {
+  async get(k){
+    if (hasWS){ try { const r = await window.storage.get(k); return (r && r.value != null) ? r.value : null; } catch(e){ return null; } }
+    if (hasLS){ try { return localStorage.getItem(k); } catch(e){} }
+    return (k in mem) ? mem[k] : null;
+  },
+  async set(k,v){
+    if (hasWS){
+      try {
+        const r = await window.storage.set(k,v);
+        if (!r) throw 0;
+        const c = await window.storage.get(k);      // 存完讀回驗證
+        return !!(c && c.value);
+      } catch(e){ mem[k]=v; return false; }
+    }
+    if (hasLS){ try { localStorage.setItem(k,v); return true; } catch(e){} }
+    mem[k]=v; return false;
+  },
+  async del(k){
+    if (hasWS){ try { await window.storage.delete(k); } catch(e){} return; }
+    if (hasLS){ try { localStorage.removeItem(k); } catch(e){} }
+    delete mem[k];
+  }
+};
+const STORE_MODE = hasWS ? "目前使用:Claude 帳號儲存(跟著你的登入帳號)" :
+                   hasLS ? "目前使用:此瀏覽器長期儲存(別清除 Safari 網站資料)" :
+                           "⚠️ 目前只有暫時記憶,關掉就會消失,請常匯出備份!";
+
+/* ═══════════ 小工具 ═══════════ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const fmt = n => "NT$ " + Number(n||0).toLocaleString("zh-TW");
+const monthKey = d => d.slice(0,7);
+const todayStr = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const CATSTYLE = { "手搖":{bg:"#E8EEE4",fg:"#7C927A"}, "咖啡":{bg:"#F0E4D8",fg:"#A98467"} };
+const PIE_COLORS = ["#C9ADA7","#9CAF97","#A98467","#B5A8C9","#D9B8A6","#8FA5B5","#C9A9B8","#A3A38A","#D4C29A","#9C8D8A"];
+const EDGE_COLORS = { none:null, white:"#FFFFFF", black:"#3A3232" };
+let toastTimer = null;
+function say(m){ const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.hidden=true, 2400); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ═══════════ 圖片處理 (讀取 / 縮圖 / 去背 / 邊框) ═══════════ */
+function fileToImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => { const img = new Image(); img.onload = ()=>resolve(img); img.onerror = ()=>reject(new Error("img")); img.src = reader.result; };
+    reader.onerror = () => reject(new Error("read"));
+    reader.readAsDataURL(file);
+  });
+}
+function drawResized(img, max=260){
+  const s = Math.min(1, max/Math.max(img.width,img.height));
+  const cv = document.createElement("canvas");
+  cv.width = Math.max(1,Math.round(img.width*s)); cv.height = Math.max(1,Math.round(img.height*s));
+  cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+  return cv;
+}
+function capCanvas(cv, max=150){
+  if (Math.max(cv.width,cv.height) <= max) return cv;
+  const s = max/Math.max(cv.width,cv.height);
+  const out = document.createElement("canvas");
+  out.width = Math.max(1,Math.round(cv.width*s)); out.height = Math.max(1,Math.round(cv.height*s));
+  out.getContext("2d").drawImage(cv,0,0,out.width,out.height);
+  return out;
+}
+function edgeMapOf(d,w,h,threshold=80){
+  const g = new Float32Array(w*h);
+  for (let i=0;i<w*h;i++) g[i] = .299*d[i*4] + .587*d[i*4+1] + .114*d[i*4+2];
+  const e = new Uint8Array(w*h);
+  for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++){
+    const p=y*w+x;
+    const gx = -g[p-w-1]-2*g[p-1]-g[p+w-1]+g[p-w+1]+2*g[p+1]+g[p+w+1];
+    const gy = -g[p-w-1]-2*g[p-w]-g[p-w+1]+g[p+w-1]+2*g[p+w]+g[p+w+1];
+    if (gx*gx+gy*gy > threshold*threshold) e[p]=1;
+  }
+  return e;
+}
+function computeMask(srcCanvas, tolerance){
+  const w=srcCanvas.width, h=srcCanvas.height;
+  const d = srcCanvas.getContext("2d").getImageData(0,0,w,h).data;
+  const mask = new Uint8Array(w*h).fill(255);
+  const edges = edgeMapOf(d,w,h);
+  const transparent = p => d[p*4+3] < 10;
+  const seeds = [];
+  const addSeed = (x,y)=>{ const p=y*w+x; if (transparent(p)) return; const i=p*4; seeds.push([d[i],d[i+1],d[i+2]]); };
+  const sx=Math.max(1,w>>4), sy=Math.max(1,h>>4);
+  for (let x=0;x<w;x+=sx){ addSeed(x,0); addSeed(x,h-1); }
+  for (let y=0;y<h;y+=sy){ addSeed(0,y); addSeed(w-1,y); }
+  const tol = tolerance*tolerance*3;
+  const isBg = p => {
+    if (transparent(p)) return true;
+    const i=p*4;
+    for (const s of seeds){ const dr=d[i]-s[0],dg=d[i+1]-s[1],db=d[i+2]-s[2]; if (dr*dr+dg*dg+db*db < tol) return true; }
+    return false;
+  };
+  const visited = new Uint8Array(w*h);
+  const queue = [];
+  const tryPush = (x,y)=>{
+    if (x<0||y<0||x>=w||y>=h) return;
+    const p=y*w+x;
+    if (visited[p]) return;
+    if (edges[p] && !transparent(p)) return;
+    visited[p]=1;
+    if (isBg(p)){ mask[p]=0; queue.push(p); }
+  };
+  for (let x=0;x<w;x++){ tryPush(x,0); tryPush(x,h-1); }
+  for (let y=0;y<h;y++){ tryPush(0,y); tryPush(w-1,y); }
+  while (queue.length){
+    const p=queue.pop(); const x=p%w, y=(p/w)|0;
+    tryPush(x+1,y); tryPush(x-1,y); tryPush(x,y+1); tryPush(x,y-1);
+  }
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const p=y*w+x;
+    if (edges[p] && mask[p]){
+      const nb = (x>0 && !mask[p-1] && !edges[p-1]) || (x<w-1 && !mask[p+1] && !edges[p+1]) ||
+                 (y>0 && !mask[p-w] && !edges[p-w]) || (y<h-1 && !mask[p+w] && !edges[p+w]);
+      if (nb && isBg(p)) mask[p]=0;
+    }
+  }
+  return mask;
+}
+function maskToDataURL(srcCanvas, mask, edgeColor=null){
+  const w=srcCanvas.width, h=srcCanvas.height;
+  const d = srcCanvas.getContext("2d").getImageData(0,0,w,h).data;
+  const out = new Uint8ClampedArray(d);
+  let minX=w,minY=h,maxX=-1,maxY=-1;
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const p=y*w+x;
+    let a = mask[p] ? 255 : 0;
+    if (a){
+      const nb = (x>0&&!mask[p-1])||(x<w-1&&!mask[p+1])||(y>0&&!mask[p-w])||(y<h-1&&!mask[p+w]);
+      if (nb) a=130;
+      a = Math.min(a, d[p*4+3]);
+      if (a>0){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+    }
+    out[p*4+3]=a;
+  }
+  if (maxX<0) return capCanvas(srcCanvas).toDataURL("image/png");
+  const cw=maxX-minX+1, ch=maxY-minY+1;
+  const full=document.createElement("canvas"); full.width=w; full.height=h;
+  full.getContext("2d").putImageData(new ImageData(out,w,h),0,0);
+  const crop=document.createElement("canvas"); crop.width=cw; crop.height=ch;
+  crop.getContext("2d").drawImage(full,minX,minY,cw,ch,0,0,cw,ch);
+  if (!edgeColor) return capCanvas(crop).toDataURL("image/png");
+  const bw=Math.max(4,Math.round(Math.max(cw,ch)*.03)), pad=bw+2;
+  const sil=document.createElement("canvas"); sil.width=cw; sil.height=ch;
+  const sctx=sil.getContext("2d");
+  sctx.drawImage(crop,0,0); sctx.globalCompositeOperation="source-in";
+  sctx.fillStyle=edgeColor; sctx.fillRect(0,0,cw,ch);
+  const framed=document.createElement("canvas"); framed.width=cw+pad*2; framed.height=ch+pad*2;
+  const fctx=framed.getContext("2d");
+  for (const r of [bw,bw*.55]) for (let i=0;i<24;i++){
+    const a=i/24*Math.PI*2;
+    fctx.drawImage(sil, pad+Math.cos(a)*r, pad+Math.sin(a)*r);
+  }
+  fctx.drawImage(crop,pad,pad);
+  return capCanvas(framed).toDataURL("image/png");
+}
+
+/* ═══════════ 照片編輯器 (上傳 → 去背 → 修補 → 邊框) ═══════════ */
+function makeEditor(mount, onImage){
+  let raw=null, mask=null, mode="cut", tol=42, edge="white", tool=null, brush=12, painting=false, finalImg=null;
+  mount.innerHTML = `
+    <label class="uplabel"><input type="file" accept="image/*" hidden><span>＋ 點這裡上傳照片</span></label>
+    <div class="edwrap" hidden>
+      <div class="checker"><canvas></canvas></div>
+      <div class="panel">
+        <div class="chips">
+          <button type="button" data-m="cut" class="chip on">✂️ 自動去背</button>
+          <button type="button" data-m="orig" class="chip">保留原圖</button>
+          <label class="chip" style="flex:.8;cursor:pointer">換照片<input type="file" accept="image/*" hidden></label>
+        </div>
+        <div class="cutui">
+          <div class="hint2"><span>去背強度</span><span>調整後筆刷修補會重來喔</span></div>
+          <input type="range" class="slider" min="12" max="80" value="42">
+          <div class="hint1">貼紙邊框</div>
+          <div class="chips">
+            <button type="button" data-eg="none" class="chip">無</button>
+            <button type="button" data-eg="white" class="chip on">⚪ 白邊</button>
+            <button type="button" data-eg="black" class="chip">⚫ 黑邊</button>
+            <span class="thumbbox"><img alt=""></span>
+          </div>
+          <div class="hint1">修補筆刷 — 選一支,直接在上面的圖塗抹</div>
+          <div class="chips" style="margin-bottom:0">
+            <button type="button" data-t="restore" class="chip">🖌️ 補回</button>
+            <button type="button" data-t="erase" class="chip">🧽 擦掉</button>
+            <button type="button" data-b="7" class="bs">小</button>
+            <button type="button" data-b="12" class="bs on">中</button>
+            <button type="button" data-b="20" class="bs">大</button>
+          </div>
+          <div class="toolhint" hidden></div>
+        </div>
+      </div>
+    </div>`;
+  const q = s => mount.querySelector(s);
+  const uplabel=q(".uplabel"), edwrap=q(".edwrap"), canvas=q("canvas"), thumb=q(".thumbbox img"), toolhint=q(".toolhint"), cutui=q(".cutui");
+
+  function redraw(){
+    if (!raw) return;
+    const w=raw.width, h=raw.height;
+    if (canvas.width!==w){ canvas.width=w; canvas.height=h; }
+    const src = raw.getContext("2d").getImageData(0,0,w,h);
+    if (mode==="cut" && mask) for (let p=0;p<w*h;p++) src.data[p*4+3] = mask[p] ? Math.min(255,src.data[p*4+3]) : 0;
+    canvas.getContext("2d").putImageData(src,0,0);
+  }
+  function doExport(){
+    if (!raw) return;
+    finalImg = (mode==="cut" && mask) ? maskToDataURL(raw, mask, EDGE_COLORS[edge]) : capCanvas(raw).toDataURL("image/png");
+    thumb.src = finalImg;
+    onImage(finalImg);
+  }
+  function recut(){
+    if (!raw) return;
+    try { mask = computeMask(raw, tol); } catch(e){ mode="orig"; }
+    redraw(); doExport();
+  }
+  function pick(file){
+    if (!file) return;
+    fileToImage(file).then(img=>{
+      raw = drawResized(img);
+      tool=null; toolhint.hidden=true;
+      mount.querySelectorAll("[data-t]").forEach(b=>b.classList.remove("on-p"));
+      mode="cut";
+      mount.querySelectorAll("[data-m]").forEach(b=>b.classList.toggle("on", b.dataset.m==="cut"));
+      cutui.hidden=false;
+      uplabel.hidden=true; edwrap.hidden=false;
+      recut();
+    }).catch(()=>say("圖片讀取失敗,換張照片試試"));
+  }
+  mount.querySelectorAll('input[type=file]').forEach(inp=>{
+    inp.addEventListener("change", e=>{ pick(e.target.files[0]); e.target.value=""; });
+  });
+  mount.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click", ()=>{
+    mode = b.dataset.m;
+    mount.querySelectorAll("[data-m]").forEach(x=>x.classList.toggle("on", x===b));
+    cutui.hidden = (mode!=="cut");
+    if (mode!=="cut"){ tool=null; toolhint.hidden=true; mount.querySelectorAll("[data-t]").forEach(x=>x.classList.remove("on-p")); }
+    redraw(); doExport();
+  }));
+  q(".slider").addEventListener("change", e=>{ tol=Number(e.target.value); recut(); });
+  mount.querySelectorAll("[data-eg]").forEach(b=>b.addEventListener("click", ()=>{
+    edge = b.dataset.eg;
+    mount.querySelectorAll("[data-eg]").forEach(x=>x.classList.toggle("on", x===b));
+    doExport();
+  }));
+  mount.querySelectorAll("[data-t]").forEach(b=>b.addEventListener("click", ()=>{
+    tool = (tool===b.dataset.t) ? null : b.dataset.t;
+    mount.querySelectorAll("[data-t]").forEach(x=>x.classList.toggle("on-p", x.dataset.t===tool));
+    canvas.style.touchAction = tool ? "none" : "auto";
+    toolhint.hidden = !tool;
+    if (tool) toolhint.textContent = "✦ 塗抹中:" + (tool==="restore" ? "把消失的杯子塗回來" : "把多餘的背景擦掉") + "(再點一次按鈕結束)";
+  }));
+  mount.querySelectorAll("[data-b]").forEach(b=>b.addEventListener("click", ()=>{
+    brush = Number(b.dataset.b);
+    mount.querySelectorAll("[data-b]").forEach(x=>x.classList.toggle("on", x===b));
+  }));
+  function paintAt(cx,cy){
+    if (!raw || !mask) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (cx-rect.left)/rect.width*raw.width, y=(cy-rect.top)/rect.height*raw.height;
+    const w=raw.width, h=raw.height, r=brush, val = tool==="restore" ? 255 : 0;
+    for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++){
+      if (dx*dx+dy*dy>r*r) continue;
+      const px=Math.round(x+dx), py=Math.round(y+dy);
+      if (px>=0&&py>=0&&px<w&&py<h) mask[py*w+px]=val;
+    }
+    redraw();
+  }
+  canvas.addEventListener("pointerdown", e=>{
+    if (!tool || mode!=="cut") return;
+    e.preventDefault(); painting=true;
+    canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+    paintAt(e.clientX,e.clientY);
+  });
+  canvas.addEventListener("pointermove", e=>{ if (painting){ e.preventDefault(); paintAt(e.clientX,e.clientY); } });
+  const up = ()=>{ if (painting){ painting=false; doExport(); } };
+  canvas.addEventListener("pointerup", up);
+  canvas.addEventListener("pointercancel", up);
+}
+</script>
+<script>
+/* ═══════════ 資料狀態 ═══════════ */
+const RKEY = "drink-records";
+let records = [];        // [{id,brand,name,price,date,cat}]
+let images = {};         // id -> dataURL
+let viewMonth = todayStr().slice(0,7);
+let statScope = "month";
+let cat = "手搖";
+let formImg = null;
+let editingRec = null, editImg = null;
+
+/* ═══════════ 儲存流程 (按月打包 + 讀回驗證) ═══════════ */
+async function persistRecords(){
+  const ok = await store.set(RKEY, JSON.stringify(records));
+  if (!ok && !hasLS && !hasWS) say("儲存失敗,請記得匯出備份");
+}
+async function saveImageFor(rec, img){
+  images[rec.id] = img;
+  const key = "drink-imgs-" + monthKey(rec.date);
+  let map = {};
+  try { const cur = await store.get(key); if (cur) map = JSON.parse(cur); } catch(e){}
+  map[rec.id] = img;
+  const ok = await store.set(key, JSON.stringify(map));
+  if (!ok) say("照片存不進長期儲存,記得匯出備份 😢");
+  return ok;
+}
+async function removeImageFor(rec){
+  delete images[rec.id];
+  const key = "drink-imgs-" + monthKey(rec.date);
+  try {
+    const cur = await store.get(key);
+    if (cur){ const map = JSON.parse(cur); delete map[rec.id]; await store.set(key, JSON.stringify(map)); }
+  } catch(e){}
+}
+async function loadAll(){
+  try { const r = await store.get(RKEY); if (r) records = JSON.parse(r); } catch(e){ records = []; }
+  const months = [...new Set(records.map(r=>monthKey(r.date)))];
+  for (const m of months){
+    try { const res = await store.get("drink-imgs-"+m); if (res) Object.assign(images, JSON.parse(res)); } catch(e){}
+  }
+}
+
+/* ═══════════ 娃娃機物理 ═══════════ */
+const SIZE = 66, RADIUS = 33;
+let bodies = [];
+const itemEls = {};
+function syncMachine(){
+  const glass = $("#glass");
+  const drinks = records.filter(r => monthKey(r.date) === viewMonth);
+  $("#glassEmpty").hidden = drinks.length > 0;
+  const keep = new Set(drinks.map(d=>d.id));
+  for (const id of Object.keys(itemEls)){
+    if (!keep.has(id)){ itemEls[id].remove(); delete itemEls[id]; }
+  }
+  const W = glass.clientWidth || 340;
+  const old = new Map(bodies.map(b=>[b.id,b]));
+  bodies = drinks.map((d,i)=>{
+    let el = itemEls[d.id];
+    if (!el){
+      el = document.createElement("div");
+      el.className = "mitem";
+      el.title = d.brand + "｜" + d.name;
+      glass.appendChild(el);
+      itemEls[d.id] = el;
+    }
+    const st = CATSTYLE[d.cat] || {bg:"#EEE",fg:"#9C8D8A"};
+    const inner = images[d.id]
+      ? '<img draggable="false" src="'+images[d.id]+'" alt="">'
+      : '<div class="ph" style="border-color:'+st.fg+';color:'+st.fg+';background:linear-gradient(180deg,'+st.bg+',#FFF)">'+esc(d.brand.slice(0,1))+'</div>';
+    if (el.dataset.inner !== inner){ el.innerHTML = inner; el.dataset.inner = inner; }
+    return old.get(d.id) || {
+      id: d.id,
+      x: 20 + Math.random()*Math.max(20, W-SIZE-40),
+      y: -SIZE - (i%5)*70 - Math.random()*40,
+      vx: (Math.random()-.5)*2, vy: 0,
+      a: (Math.random()-.5)*.5, va: (Math.random()-.5)*.04,
+    };
+  });
+}
+function shakeMachine(){
+  bodies.forEach(b=>{
+    b.vy -= 6 + Math.random()*7;
+    b.vx += (Math.random()-.5)*9;
+    b.va += (Math.random()-.5)*.3;
+  });
+  const claw = $("#claw");
+  claw.style.transition = "none";
+  claw.style.transform = "translateX(-50%) rotate(14deg)";
+  setTimeout(()=>{
+    claw.style.transition = "transform 1.2s cubic-bezier(.2,2.2,.4,1)";
+    claw.style.transform = "translateX(-50%) rotate(0deg)";
+  }, 60);
+}
+function physicsLoop(){
+  const glass = $("#glass");
+  const W = glass.clientWidth, H = glass.clientHeight;
+  if (!W || !H){ requestAnimationFrame(physicsLoop); return; } // 分頁隱藏時暫停
+  for (const b of bodies){
+    b.vy += .32; b.vx *= .995; b.va *= .985;
+    b.x += b.vx; b.y += b.vy; b.a += b.va;
+    if (b.y > H-SIZE){ b.y = H-SIZE; b.vy *= -.42; b.vx *= .86; b.va += b.vx*.01; }
+    if (b.x < 4){ b.x = 4; b.vx *= -.55; }
+    if (b.x > W-SIZE-4){ b.x = W-SIZE-4; b.vx *= -.55; }
+    if (Math.abs(b.a) > .6) b.va -= Math.sign(b.a)*.006;
+  }
+  for (let i=0;i<bodies.length;i++) for (let j=i+1;j<bodies.length;j++){
+    const A=bodies[i], B=bodies[j];
+    const dx=B.x-A.x, dy=B.y-A.y;
+    const dist=Math.hypot(dx,dy)||.01, min=RADIUS*1.7;
+    if (dist<min){
+      const push=(min-dist)/2, nx=dx/dist, ny=dy/dist;
+      A.x-=nx*push; A.y-=ny*push; B.x+=nx*push; B.y+=ny*push;
+      const t=A.vx; A.vx=A.vx*.5+B.vx*.5; B.vx=B.vx*.5+t*.5;
+    }
+  }
+  for (const b of bodies){
+    const el = itemEls[b.id];
+    if (el) el.style.transform = "translate("+b.x+"px,"+b.y+"px) rotate("+b.a+"rad)";
+  }
+  requestAnimationFrame(physicsLoop);
+}
+
+/* ═══════════ 畫面渲染 ═══════════ */
+function monthLabelOf(m){ return m.slice(0,4)+"年"+Number(m.slice(5))+"月"; }
+function renderMachineTab(){
+  $("#mlabel").textContent = monthLabelOf(viewMonth);
+  const drinks = records.filter(r=>monthKey(r.date)===viewMonth);
+  const total = drinks.reduce((s,r)=>s+r.price,0);
+  $("#sumCount").textContent = "本月 "+drinks.length+" 杯";
+  $("#sumTotal").textContent = fmt(total);
+  syncMachine();
+  const list = $("#monthList");
+  if (!drinks.length){ list.innerHTML=""; return; }
+  let html = '<div class="listhead">本月收藏 — 點 📷 可以幫這杯補照片或換照片</div>';
+  for (const r of drinks){
+    const st = CATSTYLE[r.cat]||{};
+    html += '<div class="rowitem">'
+      + '<div class="thumb40">'+(images[r.id] ? '<img src="'+images[r.id]+'" alt="">' : (r.cat==="咖啡"?"☕":"🧋"))+'</div>'
+      + '<div class="mid"><div class="t1">'+esc(r.brand)+'<span>｜'+esc(r.name)+'</span></div>'
+      + '<div class="t2">'+r.date.slice(5).replace("-","/")+' ·<span class="tag" style="background:'+st.bg+';color:'+st.fg+'">'+r.cat+'</span>'
+      + (images[r.id] ? '' : '<span class="nopic">還沒有照片 →</span>')+'</div></div>'
+      + '<div class="price">'+r.price+'</div>'
+      + '<button data-act="photo" data-id="'+r.id+'" aria-label="補照片">📷</button>'
+      + '<button data-act="del" data-id="'+r.id+'" aria-label="刪除" style="color:#C9ADA7;font-size:15px">✕</button>'
+      + '</div>';
+  }
+  list.innerHTML = html;
+}
+function donutHTML(title, data){
+  const total = data.reduce((s,d)=>s+d.value,0);
+  let inner;
+  if (!data.length){
+    inner = '<div class="emptymsg">這段期間還沒有紀錄</div>';
+  } else {
+    const cx=95, cy=95, r1=52, r2=82;
+    const pol = (r,a)=>[cx+r*Math.cos(a*Math.PI/180), cy+r*Math.sin(a*Math.PI/180)];
+    let a0=-90, paths="";
+    data.forEach((d,i)=>{
+      const sweep = d.value/total*360;
+      const color = PIE_COLORS[i%PIE_COLORS.length];
+      const gap = data.length>1 ? 1 : 0;
+      const s=a0+gap, e=a0+sweep-gap;
+      a0 += sweep;
+      if (sweep >= 359.5){
+        // 完整一圈:SVG 弧線畫不出 360°,改畫圓環
+        paths += '<circle cx="'+cx+'" cy="'+cy+'" r="'+((r1+r2)/2)+'" fill="none" stroke="'+color+'" stroke-width="'+(r2-r1)+'"/>';
+      } else {
+        if (e<=s) return;
+        const large = (e-s)>180 ? 1 : 0;
+        const [x1,y1]=pol(r2,s),[x2,y2]=pol(r2,e),[x3,y3]=pol(r1,e),[x4,y4]=pol(r1,s);
+        paths += '<path d="M'+x1+' '+y1+' A'+r2+' '+r2+' 0 '+large+' 1 '+x2+' '+y2
+               + ' L'+x3+' '+y3+' A'+r1+' '+r1+' 0 '+large+' 0 '+x4+' '+y4+' Z" fill="'+color+'"/>';
+      }
+      if (d.value/total >= .08){
+        const mid=(s+e)/2, [tx,ty]=pol((r1+r2)/2, mid);
+        paths += '<text x="'+tx+'" y="'+(ty+3)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#FFF">'+Math.round(d.value/total*100)+'%</text>';
+      }
+    });
+    let legend = "";
+    data.forEach((d,i)=>{
+      legend += '<span><i style="background:'+PIE_COLORS[i%PIE_COLORS.length]+'"></i>'+esc(d.name)+' <em>'+d.value+'杯</em></span>';
+    });
+    inner = '<div class="donutwrap"><svg width="190" height="190" viewBox="0 0 190 190">'+paths+'</svg>'
+          + '<div class="donutcenter"><b>'+total+'</b><span>杯</span></div></div>'
+          + '<div class="legend">'+legend+'</div>';
+  }
+  return '<div class="donutcard"><h4>'+title+'</h4>'+inner+'</div>';
+}
+function renderStats(){
+  const monthDrinks = records.filter(r=>monthKey(r.date)===viewMonth);
+  const year = viewMonth.slice(0,4);
+  const yearDrinks = records.filter(r=>r.date.slice(0,4)===year);
+  $("#stMk").textContent = monthLabelOf(viewMonth)+" · "+monthDrinks.length+" 杯";
+  $("#stMv").textContent = fmt(monthDrinks.reduce((s,r)=>s+r.price,0));
+  $("#stYk").textContent = year+"年 · "+yearDrinks.length+" 杯";
+  $("#stYv").textContent = fmt(yearDrinks.reduce((s,r)=>s+r.price,0));
+  const scope = statScope==="month" ? monthDrinks : statScope==="year" ? yearDrinks : records;
+  $("#scopeTitle").textContent = (statScope==="month" ? monthLabelOf(viewMonth) : statScope==="year" ? year+"年" : "全部") + "喝了什麼";
+  const bm = {};
+  for (const r of scope){ if(!bm[r.brand]) bm[r.brand]={count:0,sum:0,cat:r.cat}; bm[r.brand].count++; bm[r.brand].sum+=r.price; }
+  const ranking = Object.entries(bm).sort((a,b)=>b[1].count-a[1].count);
+  const brandPie = ranking.map(([name,v])=>({name, value:v.count}));
+  const im = {};
+  for (const r of scope) im[r.name]=(im[r.name]||0)+1;
+  const itemPie = Object.entries(im).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
+  $("#donuts").innerHTML = donutHTML("🏷️ 品牌分布", brandPie) + donutHTML("🥤 品項分布", itemPie);
+  const maxCount = ranking[0] ? ranking[0][1].count : 1;
+  let html = ranking.length ? '<div style="font-size:13.5px;font-weight:700;margin:16px 0 8px">品牌排行</div>' : "";
+  ranking.forEach(([brand,v],i)=>{
+    const grad = v.cat==="咖啡" ? "linear-gradient(90deg,#C8A98E,#A98467)" : "linear-gradient(90deg,#B7C7B0,#7C927A)";
+    html += '<div class="rankitem"><div class="top"><span class="nm"><b style="color:'+(i===0?"#A98467":"#9C8D8A")+'">'+(i===0?"♛":i+1)+'</b>'+esc(brand)+'</span>'
+      + '<span class="ct">'+v.count+' 杯 · '+fmt(v.sum)+'</span></div>'
+      + '<div class="rankbar"><i style="width:'+(v.count/maxCount*100)+'%;background:'+grad+'"></i></div></div>';
+  });
+  $("#ranking").innerHTML = html;
+  renderSpendHistory();
+}
+/* 每月 / 每年總花費紀錄 (看全部資料,不受上面期間切換影響) */
+function renderSpendHistory(){
+  const byMonth = {}, byYear = {};
+  for (const r of records){
+    const m = monthKey(r.date), y = r.date.slice(0,4);
+    (byMonth[m] = byMonth[m] || {sum:0,count:0}); byMonth[m].sum += r.price; byMonth[m].count++;
+    (byYear[y] = byYear[y] || {sum:0,count:0}); byYear[y].sum += r.price; byYear[y].count++;
+  }
+  const months = Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0]));
+  const years = Object.entries(byYear).sort((a,b)=>b[0].localeCompare(a[0]));
+  if (!months.length){ $("#spendHistory").innerHTML=""; return; }
+  const maxM = Math.max(...months.map(([,v])=>v.sum)) || 1;
+  const maxY = Math.max(...years.map(([,v])=>v.sum)) || 1;
+  const rows = (list, max, labelFn, grad) => list.map(([k,v]) =>
+    '<div class="rankitem"><div class="top"><span class="nm">'+labelFn(k)+'</span>'
+    + '<span class="ct">'+v.count+' 杯 · <b style="color:var(--bodyDeep);font-family:\'Baloo 2\',sans-serif">'+fmt(v.sum)+'</b></span></div>'
+    + '<div class="rankbar"><i style="width:'+(v.sum/max*100)+'%;background:'+grad+'"></i></div></div>'
+  ).join("");
+  $("#spendHistory").innerHTML =
+    '<div style="font-size:13.5px;font-weight:700;margin:16px 0 8px">💰 每月總花費</div>'
+    + rows(months, maxM, k => monthLabelOf(k), "linear-gradient(90deg,#D9C2BC,#A98A84)")
+    + '<div style="font-size:13.5px;font-weight:700;margin:16px 0 8px">📅 每年總花費</div>'
+    + rows(years, maxY, k => k+"年", "linear-gradient(90deg,#B7C7B0,#7C927A)");
+}
+function renderAll(){ renderMachineTab(); renderStats(); }
+
+/* ═══════════ 事件 ═══════════ */
+$("#mprev").onclick = ()=>{ shiftMonth(-1); };
+$("#mnext").onclick = ()=>{ shiftMonth(1); };
+function shiftMonth(d){
+  const [y,m] = viewMonth.split("-").map(Number);
+  const dt = new Date(y, m-1+d, 1);
+  viewMonth = dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0");
+  renderAll();
+}
+$("#shakeBtn").onclick = shakeMachine;
+$$("nav button").forEach(b=>b.onclick = ()=>{
+  $$("nav button").forEach(x=>x.classList.toggle("on", x===b));
+  const t = b.dataset.tab;
+  $("#tab-machine").hidden = t!=="machine";
+  $("#tab-add").hidden = t!=="add";
+  $("#tab-stats").hidden = t!=="stats";
+});
+$("#catTea").onclick = ()=>{ cat="手搖"; $("#catTea").className="on-tea"; $("#catCof").className=""; };
+$("#catCof").onclick = ()=>{ cat="咖啡"; $("#catCof").className="on-cof"; $("#catTea").className=""; };
+$("#fBrand").addEventListener("input", e=>e.target.classList.remove("miss"));
+$("#fPrice").addEventListener("input", e=>e.target.classList.remove("miss"));
+
+$("#addBtn").onclick = async ()=>{
+  const brand = $("#fBrand").value.trim();
+  const price = Number($("#fPrice").value);
+  const noBrand = !brand, noPrice = !price || price<=0;
+  if (noBrand || noPrice){
+    $("#fBrand").classList.toggle("miss", noBrand);
+    $("#fPrice").classList.toggle("miss", noPrice);
+    $("#fBrand").scrollIntoView({behavior:"smooth", block:"center"});
+    return say(formImg ? "照片好了!還差"+(noBrand?"品牌":"")+(noBrand&&noPrice?"和":"")+(noPrice?"價格":"")+"喔" : (noBrand?"品牌":"價格")+"要填喔");
+  }
+  const id = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const rec = { id, brand, name: $("#fName").value.trim()||"未命名", price, date: $("#fDate").value||todayStr(), cat };
+  records.unshift(rec);
+  await persistRecords();
+  if (formImg) await saveImageFor(rec, formImg);
+  $("#fBrand").value=""; $("#fName").value=""; $("#fPrice").value=""; $("#fDate").value=todayStr();
+  formImg = null;
+  makeEditor($("#addEditor"), img=>formImg=img);
+  viewMonth = monthKey(rec.date);
+  renderAll();
+  $$("nav button")[0].click();
+  say("收進娃娃機了!🧋");
+};
+
+$("#monthList").addEventListener("click", async e=>{
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const rec = records.find(r=>r.id===b.dataset.id);
+  if (!rec) return;
+  if (b.dataset.act==="del"){
+    records = records.filter(r=>r.id!==rec.id);
+    await persistRecords();
+    await removeImageFor(rec);
+    renderAll();
+  } else if (b.dataset.act==="photo"){
+    editingRec = rec; editImg = null;
+    $("#modalTitle").textContent = "📷 "+rec.brand+"｜"+rec.name;
+    $("#modalSave").disabled = true;
+    makeEditor($("#modalEditor"), img=>{ editImg=img; $("#modalSave").disabled=false; });
+    $("#modal").hidden = false;
+  }
+});
+$("#modalClose").onclick = ()=>{ $("#modal").hidden=true; editingRec=null; editImg=null; };
+$("#modal").addEventListener("click", e=>{ if (e.target===$("#modal")) $("#modalClose").onclick(); });
+$("#modalSave").onclick = async ()=>{
+  if (!editingRec || !editImg) return;
+  $("#modalSave").disabled = true;
+  const ok = await saveImageFor(editingRec, editImg);
+  say(ok ? "照片放進娃娃機了!" : "照片先顯示著,但沒存進長期儲存");
+  $("#modal").hidden = true; editingRec=null; editImg=null;
+  renderAll();
+};
+$$(".scopes button").forEach(b=>b.onclick = ()=>{
+  statScope = b.dataset.sc;
+  $$(".scopes button").forEach(x=>x.classList.toggle("on", x===b));
+  renderStats();
+});
+
+/* ═══════════ 匯出 / 匯入備份 ═══════════ */
+$("#expBtn").onclick = ()=>{
+  const payload = JSON.stringify({ app:"drink-machine", v:1, exportedAt:new Date().toISOString(), records, images });
+  const blob = new Blob([payload], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "飲料娃娃機備份-"+todayStr()+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+  say("備份檔已產生,記得存到「檔案」裡 🔐");
+};
+$("#impInput").addEventListener("change", e=>{
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    try {
+      const data = JSON.parse(reader.result);
+      if (data.app!=="drink-machine" || !Array.isArray(data.records)) throw 0;
+      records = data.records;
+      images = data.images || {};
+      await persistRecords();
+      const byMonth = {};
+      for (const r of records) if (images[r.id]){ const k=monthKey(r.date); (byMonth[k]=byMonth[k]||{})[r.id]=images[r.id]; }
+      for (const [m,map] of Object.entries(byMonth)) await store.set("drink-imgs-"+m, JSON.stringify(map));
+      viewMonth = todayStr().slice(0,7);
+      renderAll();
+      say("匯入完成!收藏都回來了 🎉");
+    } catch(err){ say("這不是娃娃機的備份檔喔"); }
+  };
+  reader.readAsText(file);
+});
+
+/* ═══════════ 啟動 ═══════════ */
+(async function init(){
+  $("#fDate").value = todayStr();
+  $("#storeMode").textContent = STORE_MODE + " · 版本 v3(有圓環修正+花費紀錄)";
+  makeEditor($("#addEditor"), img=>formImg=img);
+  await loadAll();
+  renderAll();
+  requestAnimationFrame(physicsLoop);
+})();
+</script>
+</body>
+</html>
